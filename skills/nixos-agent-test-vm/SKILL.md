@@ -1,6 +1,6 @@
 ---
-name: test-nixos-vm
-description: Use when testing NixOS configuration changes in a VM.
+name: nixos-agent-test-vm
+description: Use when testing a NixOS configuration in a VM, when setting up the VM harness for a new host, or when asked to update/refresh this skill. Reach for it whenever you need to verify a NixOS change actually works at runtime, not just that it builds.
 ---
 
 # Test NixOS VM
@@ -10,6 +10,8 @@ This skill describes a VM harness that boots a real NixOS host configuration ins
 The harness is provided by the [`nixos-agent-test-vm`](https://github.com/lorenzbischof/nixos-agent-test-vm) flake: the consuming flake adds it as an input and exposes one `apps.<system>.<host>-agent-vm` attribute per host it wants to drive. **If `nix run .#<host>-agent-vm` doesn't exist yet for the host you want to test, read [SETUP.md](SETUP.md) to wire it up; otherwise stay here.**
 
 > Examples below use `framework` as the host name. Substitute your own host wherever you see it.
+
+> **Refreshing this skill.** When the user asks to update or refresh this skill, run `check.sh` from this skill's directory (e.g. `.claude/skills/nixos-agent-test-vm/check.sh`) to compare the vendored copy against the revision pinned in their `flake.lock`. If it reports `ok`, tell the user the skill is already in sync. If it reports `stale`, run the `nix run github:lorenzbischof/nixos-agent-test-vm/<rev>` command that `check.sh` prints (it embeds the locked revision so the install matches the pin) and ask the user to commit the result. Also run the same check once at the start of a VM session if the user has recently run `nix flake update`; otherwise skip it on routine VM interactions.
 
 Use the upstream NixOS test documentation as the canonical reference for test-driver behavior and `machine.*` APIs:
 

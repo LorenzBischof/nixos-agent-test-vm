@@ -6,7 +6,7 @@ Give your AI coding agent eyes and hands on a NixOS desktop. You don't want it r
 
 Two ways:
 
-1. **Install the skill.** Copy `skills/test-nixos-vm/` into your project's `.claude/skills/` (or `.agents/skills/` for Codex). The agent discovers `SKILL.md` and `SETUP.md` on its own. `SETUP.md` walks it through adding the flake input and wiring up `mkAgentVm` per host; `SKILL.md` covers the runtime socket protocol and common interaction patterns.
+1. **Install the skill.** From your project root, run `nix run github:lorenzbischof/nixos-agent-test-vm` and commit the result. To refresh later (after `nix flake update`), just ask your agent to update the skill.
 
 2. **Point the agent at this README.** The agent will install the skill and handle everything for you.
 
@@ -14,13 +14,7 @@ Either way, the agent ends up calling `nix run .#<host>-agent-vm` and talking to
 
 ## Manual setup
 
-If you'd rather wire it up by hand, read [`skills/test-nixos-vm/SETUP.md`](skills/test-nixos-vm/SETUP.md). It's a short flake-input + one `mkAgentVm { ... }` call.
-
-## What's in this repo
-
-- `flake.nix`: exposes `mkAgentVm` as a top-level output.
-- `agent-vm-driver.py`: the Python REPL baked into the test script. One line of Python in, one JSON line out, state persists.
-- `skills/test-nixos-vm/`: agent-readable skill, with `SKILL.md` (runtime use) and `SETUP.md` (installation).
+If you'd rather wire it up by hand, read [`skills/nixos-agent-test-vm/SETUP.md`](skills/nixos-agent-test-vm/SETUP.md). It's a short flake-input + one `mkAgentVm { ... }` call.
 
 ## How it works
 

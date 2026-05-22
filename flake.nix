@@ -3,7 +3,31 @@
 
   outputs =
     { self }:
+    let
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
+      forAllSystems =
+        f: builtins.listToAttrs (map (system: { name = system; value = f system; }) systems);
+    in
     {
+      apps = forAllSystems (
+        system:
+        let
+          install = {
+            type = "app";
+            program = "${self}/install.sh";
+          };
+        in
+        {
+          default = install;
+          inherit install;
+        }
+      );
+
       mkAgentVm =
         {
           pkgs,
