@@ -11,7 +11,7 @@ The harness is provided by the [`nixos-agent-test-vm`](https://github.com/lorenz
 
 > Examples below use `framework` as the host name. Substitute your own host wherever you see it.
 
-> **Refreshing this skill.** When the user asks to update or refresh this skill, run `check.sh` from this skill's directory (e.g. `.claude/skills/nixos-agent-test-vm/check.sh`) to compare the vendored copy against the revision pinned in their `flake.lock`. If it reports `ok`, tell the user the skill is already in sync. If it reports `stale`, run the `nix run github:lorenzbischof/nixos-agent-test-vm/<rev>` command that `check.sh` prints (it embeds the locked revision so the install matches the pin) and ask the user to commit the result. Also run the same check once at the start of a VM session if the user has recently run `nix flake update`; otherwise skip it on routine VM interactions.
+> **Checking / refreshing this skill.** `check.sh` from this skill's directory (e.g. `.claude/skills/nixos-agent-test-vm/check.sh`) is a read-only probe: it prints `ok` (exit 0) when the vendored copy matches the `nixos-agent-test-vm` revision pinned in their `flake.lock`, or `stale` (exit 1) when it doesn't. It changes nothing, so run it freely — at the start of a VM session if the user has recently run `nix flake update`, or whenever the user asks whether the skill is current; skip it on routine VM interactions. If it reports `stale`, refreshing **overwrites the vendored files**, so only run `check.sh --refresh` yourself once the user asks or grants permission; afterward ask them to commit the result.
 
 Use the upstream NixOS test documentation as the canonical reference for test-driver behavior and `machine.*` APIs:
 
