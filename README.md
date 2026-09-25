@@ -40,11 +40,21 @@ If you'd rather wire it up by hand, read [`skills/nixos-agent-test-vm/SETUP.md`]
 
 ```console
 $ export AGENT_VM_SESSION=readme-example
-$ socket="$(nix run .#framework-agent-vm -- socket)"
+$ socket="$(nix run .#<host>-agent-vm -- socket)"
 $ socat -t 120 - UNIX-CONNECT:"$socket" <<'PY'
 code, out = machine.execute("hostname")
 assert code == 0, out
 out
 PY
-{"ok": true, "result": "'framework\\n'"}
+{"ok": true, "result": "'<host>\\n'"}
 ```
+
+## Testing the harness itself
+
+`example/` is a self-contained flake with a minimal graphical host, so the harness can be exercised without a private configuration:
+
+```bash
+./example/selftest.sh
+```
+
+It boots the example host, checks the socket protocol, the graphical session (`Mod4+t`, `send_chars`, a screenshot) and the `apply` loop, then stops the VM. Use it after changing `agent-vm-driver.py`, `flake.nix` or the skill — it is the fastest way to find out whether a documented pattern still holds.
