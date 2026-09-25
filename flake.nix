@@ -80,6 +80,9 @@
                       extraConfig
                     ];
                   };
+                # The test framework's default of one hour kills the VM
+                # mid-session, indistinguishable from a crash. Backstop only.
+                globalTimeout = 7 * 24 * 60 * 60;
                 testScript = ''
                   SOCKET_NAME = "${name}.sock"
                 ''
@@ -129,6 +132,9 @@
               log="$session_dir/driver.log"
               pid_file="$session_dir/driver.pid"
               system_root="$session_dir/system"
+              # Screenshots and copy_from_vm default to the driver's working
+              # directory — the flake root. Keep them in the session instead.
+              out_dir="$session_dir/out"
 
               probe_vm() {
                 local response
@@ -208,7 +214,7 @@
                   fi
                   wait_for_vm
                   root_system
-                  echo "started ${name} for session $session_key; socket: $socket; log: $log"
+                  echo "started ${name} for session $session_key; socket: $socket; log: $log; out: $out_dir"
                   ;;
 
                 apply)
@@ -270,12 +276,12 @@
                   ;;
 
                 run)
-                  mkdir -p "$session_dir"
+                  mkdir -p "$session_dir" "$out_dir"
                   chmod 700 "$session_dir"
                   printf '%s\n' "$$" >"$pid_file"
                   export XDG_RUNTIME_DIR="$session_dir"
                   set +e
-                  ${vm.driver}/bin/nixos-test-driver "$@"
+                  ${vm.driver}/bin/nixos-test-driver --output_directory "$out_dir" "$@"
                   status=$?
                   rm -f "$pid_file"
                   exit "$status"

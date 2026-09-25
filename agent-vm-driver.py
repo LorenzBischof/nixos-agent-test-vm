@@ -23,6 +23,7 @@ persists across connections.
 """
 
 import ast
+import base64
 import json
 import linecache
 import os
@@ -37,8 +38,31 @@ start_all()
 # single-node compatibility wrapper.
 machine = vm
 
+
+def sh(script, timeout=60, strict=False):
+    """Run a shell script in the guest. Returns `(exit_code, output)`.
+
+    Safer than `machine.execute`, which inlines the script into
+    `bash -c 'set -euo pipefail; <script>'`: there the script text is in the
+    wrapper's own command line (`pkill -f` matches and kills the caller), one
+    non-zero command silently discards every later line, and stderr is lost to
+    the console log. Running from a file avoids all three. Exit code 124 means
+    `timeout` seconds elapsed.
+    """
+    body = f"set -euo pipefail\n{script}" if strict else script
+    blob = base64.b64encode(body.encode()).decode()
+    # exec so the in-guest timeout signals the script, not a wrapper shell;
+    # nothing is left to remove the temp file, but guest /tmp is ephemeral.
+    return machine.execute(
+        "script=$(mktemp /tmp/agent-sh.XXXXXX)\n"
+        f"printf %s {blob} | base64 -d >\"$script\"\n"
+        f'exec timeout {timeout} bash "$script" 2>&1'
+    )
+
+
 # Keep user assignments out of the server's own globals while preserving all
-# symbols provided by the NixOS test driver (`machine`, `nodes`, `subtest`, ...).
+# symbols provided by the NixOS test driver (`machine`, `nodes`, `subtest`, ...)
+# and `sh` above.
 NS = globals().copy()
 
 
